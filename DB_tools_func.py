@@ -69,12 +69,12 @@ def run_db_tab1():
     attac_tbl_select['direction'].fillna('',inplace=True)
     attac_tbl_select['in_out'].fillna('', inplace=True)
     elevation_function(attac_tbl_select, 'lat', 'lon')
-    find_addr(attac_tbl_select, 'lat', 'lon')
+    # find_addr(attac_tbl_select, 'lat', 'lon')
 
     project_name = attac_tbl_select['project_location'][0]
     excelApp = client.gencache.EnsureDispatch("Excel.Application")
     wb = excelApp.Workbooks.Open(excel)
-    excelApp.Visible = False
+    excelApp.Visible = True
     ws = wb.Worksheets('Site info for Rpt')
 
     ws.Range('A1').Value = project_id
@@ -87,7 +87,7 @@ def run_db_tab1():
         ws.Range(f'E{4 + i}').Value = attac_tbl_select.loc[i, 'expected_diam']
         ws.Range(f'F{4 + i}').Value = attac_tbl_select.loc[i, 'install_diameter']
         ws.Range(f'H{4 + i}').Value = attac_tbl_select.loc[i, 'direction'] + '_' + attac_tbl_select.loc[i, 'in_out']
-        ws.Range(f'I{4 + i}').Value = attac_tbl_select.loc[i, 'LOCATIONS']
+        ws.Range(f'I{4 + i}').Value = attac_tbl_select.loc[i, 'site_location']
         ws.Range(f'J{4 + i}').Value = str(attac_tbl_select.loc[i, 'install_date'])
         ws.Range(f'K{4 + i}').Value = attac_tbl_select.loc[i, 'lat']
         ws.Range(f'L{4 + i}').Value = attac_tbl_select.loc[i, 'lon']
@@ -112,7 +112,7 @@ def run_db_tab2():
 
     excelApp = client.gencache.EnsureDispatch("Excel.Application")
     wb = excelApp.Workbooks.Open(excel)
-    excelApp.Visible = False
+    excelApp.Visible = True
 
     ws = wb.Worksheets('Info for DB')
     df = pd.DataFrame(ws.UsedRange())
@@ -127,9 +127,18 @@ def run_db_tab2():
     photos = [i.stem for i in pathlib.Path.glob(photo_dir, '*.jpg')]
     photos = [i for i in photos if ' ' in i]
 
+    pattern = ''
+    while pattern != 'y' and pattern != 'n':
+        pattern = input('Is there an empty space between Site and the number. i.e. Site 1. y/n')
+
+
     for idx, value in enumerate(site_list):
         site_name = value
-        photos_per_site = [x for x in photos if site_name == x.split(' ')[0]]
+        if pattern == 'n':
+            photos_per_site = [x for x in photos if site_name == x.split(' ')[0]]
+        else:
+            photos_per_site = [x for x in photos if x.split(' ')[0]+' '+ x.split(' ')[1]]
+
         eff_photos = [x for x in photos_per_site if 'EFF' in x.upper()]
         inf_photos = [x for x in photos_per_site if 'INF' in x.upper()]
 
@@ -178,3 +187,6 @@ def run_db_tab2():
     ws.Range(ws.Cells(7, 2),  # Cell to start the "paste"
              ws.Cells(7 + len(site_list) - 1, 15)
              ).Value = matrix.values
+
+
+
